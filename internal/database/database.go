@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"golang-microservice-sekolah/internal/database/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
@@ -28,7 +29,11 @@ type Service interface {
 	// It returns the resulting rows and an error if the query fails.
 	Query(query string, args ...interface{}) (*gorm.DB, error)
 	
+	// Return Gorm DB
 	ToGormDB() *gorm.DB
+	
+	// Migrate the database
+	Migrate() error
 }
 
 type service struct {
@@ -51,7 +56,7 @@ func New() Service {
 	}
 	
 	// Opening a driver typically will not attempt to connect to the database.
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbname)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, host, port, dbname)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	//db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbname))
 	if err != nil {
@@ -153,6 +158,16 @@ func (s *service) Query(query string, args ...interface{}) (*gorm.DB, error) {
 		return nil, result.Error
 	}
 	return result, nil
+}
+
+func (s *service) Migrate() error {
+	err := s.db.AutoMigrate(&model.Users{})
+	if err != nil {
+		log.Println("Database migration failed:", err)
+		return err
+	}
+	log.Println("Database Migration Completed!")
+	return nil
 }
 
 func (s *service) ToGormDB() *gorm.DB {
