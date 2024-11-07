@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang-microservice-sekolah/internal/database/handler"
+	customMiddleware "golang-microservice-sekolah/internal/middleware"
 	"net/http"
 )
 
@@ -12,11 +13,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/register", handler.RegisterUserHandler)
+		r.Post("/get-token", handler.GenerateUserTokenHandler)
+	})
+	
 	//grouping routes
 	r.Route("/api", func(r chi.Router) {
+		r.Use(customMiddleware.AuthorizationHandler)
 		r.Get("/", s.HelloWorldHandler)
 		r.Route("/v1", func(r chi.Router) {
 			r.Get("/", s.HelloWorldHandler)
+			
 			r.Get("/health", s.healthHandler)
 			
 			r.Route("/schools", func(r chi.Router) {
@@ -27,10 +35,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 				r.Delete("/:{uuid}", handler.DeleteSchoolByUuidHandler)
 			})
 			
-			r.Route("/users", func(r chi.Router) {
-				r.Post("/register", handler.RegisterUserHandler)
-				r.Post("/get-token", handler.GenerateUserTokenHandler)
-			})
 		})
 	})
 	return r
