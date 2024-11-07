@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,10 +21,16 @@ type Server struct {
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	
+	dbService := database.New()
+	if err := dbService.Migrate(); err != nil {
+		log.Fatalf("Database migration failed: %v", err)
+	}
+	
 	NewServer := &Server{
 		port: port,
 		
-		db: database.New(),
+		db: dbService,
 	}
 	
 	// Declare Server config
