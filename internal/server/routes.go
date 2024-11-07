@@ -26,6 +26,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 				r.Put("/:{uuid}", handler.UpdateSchoolByUuidHandler)
 				r.Delete("/:{uuid}", handler.DeleteSchoolByUuidHandler)
 			})
+			
+			r.Route("/users", func(r chi.Router) {
+				r.Post("/register", handler.RegisterUserHandler)
+				r.Post("/get-token", handler.GenerateUserTokenHandler)
+			})
 		})
 	})
 	return r
