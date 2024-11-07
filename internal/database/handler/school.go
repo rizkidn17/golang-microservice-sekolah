@@ -19,7 +19,6 @@ func GetSchoolsHandler(w http.ResponseWriter, r *http.Request) {
 	var schools []model.School
 	
 	if err := db.Model(&model.School{}).
-		Select("uuid, name, kode_provinsi, kode_kab_kota, kode_kecamatan, npsn, bentuk, status, alamat_jalan, lintang, bujur").
 		Find(&schools).Error; err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to retrieve data", http.StatusInternalServerError)
@@ -41,7 +40,6 @@ func GetSchoolByUuidHandler(w http.ResponseWriter, r *http.Request) {
 	var school model.School
 	
 	if err := db.Model(&model.School{}).
-		Select("uuid, name, kode_provinsi, kode_kab_kota, kode_kecamatan, npsn, bentuk, status, alamat_jalan, lintang, bujur").
 		Where("uuid = ?", uuidParam).First(&school).Error; err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to retrieve data", http.StatusInternalServerError)
@@ -130,7 +128,7 @@ func DeleteSchoolByUuidHandler(w http.ResponseWriter, r *http.Request) {
 	
 	var school model.School
 	
-	if err := db.Model(&model.School{}).Select("uuid").Where("uuid = ?", uuidParam).First(&school).Error; err != nil {
+	if err := db.Model(&model.School{}).Where("uuid = ?", uuidParam).First(&school).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			http.Error(w, "School not found", http.StatusNotFound)
 		} else {
